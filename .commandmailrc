@@ -1,0 +1,179 @@
+# -*- ruby -*-
+
+$: << "/home/masui/PIM/programs"
+
+require 'pimdb'
+require 'wiki'
+require 'wikilist'
+require 'wikipost'
+require 'config'
+
+class CommandMailHandler
+  def initialize(message)
+    @message = message
+  end
+
+  def process
+    case @message.subject
+    when /(時刻指定|遅延転送)\!/
+      delay
+    when /日記\!/
+      diary
+    when /マイクロアイデア\!/
+      microidea
+    when /TODO\!/
+      todo
+    when /Wiki\?/
+      wikiget
+    when /Wiki\!/
+      wikiset
+    when /スケジュール\?/
+      scheduleget
+    when /スケジュール\!/
+      scheduleset
+    end
+  end
+
+  def at_time(t) # atコマンドが受け付ける時刻形式
+    sprintf("%02d:%02d %d/%d/%d",t.hour,t.min,t.mon,t.mday,t.year)
+  end
+
+  def delay
+    to = @message.header['To']
+    subject = 'Delayed mail'
+    sendtime = Time.now
+
+    while true do
+      line = @message.body.shift
+      break if line.nil? # EOF
+      line.chomp!
+      if line =~ /^\s*$/ then
+	break
+      elsif line =~ /^\S+@/ then
+	to = line
+      elsif ParseDate.parsedate(line) != [nil] * 8
+	sendtime = ParseDate.time(line)
+      else
+	subject = line
+      end
+    end
+
+    delayfile = "/tmp/delaymail#{$$}"
+    File.open(delayfile,'w'){ |f|
+      f.write(<<CMDEND)
+/usr/local/bin/ruby -x
+#!ruby
+require 'net/smtp'
+Net::SMTP.start('#{LensConfig[:smtp_host]}', 25) { |smtp|
+  smtp.send_mail(<<EOF,'#{LensConfig[:local_address]}','#{LensConfig[:local_address]}')
+Subject: #{subject.tojis}
+To: #{to}
+
+#{@message.body}
+EOF
+}
+CMDEND
+    }
+    # puts "at #{at_time(sendtime)} -f #{delayfile}"
+    system "at #{at_time(sendtime)} -f #{delayfile}"
+    File.unlink(delayfile)
+  end
+
+  def todo
+    wiki = Wiki.new(PimConfig)
+    oldid = wiki.title2id('TODO')
+    if oldid then
+      oldpage = WikiPage.new(wiki,oldid)
+      newpage = WikiPage.new(wiki)
+      newpage.title = 'TODO'
+      newpage.type = 'Wiki'
+      newpage.filter = oldpage.filter
+      newpage.text = @message.body.join.toeuc + oldpage.text.to_s
+      newpage.html = newpage.wikipage
+      newpage.access = oldpage.access + "#{newpage.id} *\n"
+    end
+  end
+
+  def wikiget
+    wiki = Wiki.new(PimConfig)
+    query = @message.body[0].to_s.chomp.toeuc
+    id = wiki.title2id(query)
+    id = wiki.agrep(query)[0].id unless id
+
+    wikipage = WikiPage.new(wiki,id)
+    Net::SMTP.start(LensConfig[:smtp_host], 25) { |smtp|
+      msg = "Subject: 「#{query}」検索結果\n\n".tojis + wikipage.text.tojis
+      smtp.send_mail(msg,LensConfig[:local_address],
+		     LensConfig[:mobile_address])
+    }
+  end	     
+ 	     
+  def wikiset
+    wiki = Wiki.new(PimConfig)
+    wikipage = WikiPage.new(wiki)
+    wikipage.title = @message.body.shift.toeuc
+    wikipage.text = @message.body.join.toeuc
+    wikipage.type = 'Wiki'
+    wikipage.filter = 'none'
+    wikipage.html = wikipage.wikipage
+    wikipage.access = "#{wikipage.id} *\n"
+  end
+ 
+  def diary
+    wiki = Wiki.new(PimConfig)
+    wikipage = WikiPage.new(wiki)
+    (year, mon, day) = wikipage.isplit
+    title = "日記#{year}/#{mon}"
+    wikipage.post('増井',title,@message.body.join.toeuc)
+  end
+
+  def microidea
+    wiki = Wiki.new(PimConfig)
+    wikipage = WikiPage.new(wiki)
+    title = "マイクロアイデア"
+    wikipage.post('増井',title,@message.body.join.toeuc)
+  end
+
+  def scheduleget
+    pimdb = PimDatabase.new(PimConfig)
+
+    time = Time.now
+    timestr = @message.body.shift.to_s
+    if ParseDate.parsedate(timestr) != [nil] * 8 then
+      time = ParseDate.time(timestr)
+    end
+
+    res = ''
+    (0..20).each { |day|
+      t = time + day * 24 * 60 * 60
+      id = sprintf("%04d%02d%02d999999",t.year,t.month,t.day)
+      pimdata = PimData.new(pimdb,id)
+      txt = pimdata.text
+      if txt then
+	txt.each { |entry|
+	  if  entry !~ /^\s*$/ then
+	    res << "#{t.month}/#{t.day} #{entry}"
+	  end
+	}
+      end
+    }
+    Net::SMTP.start(LensConfig[:smtp_host], 25) { |smtp|
+      msg = "Subject: スケジュール\n\n".tojis + res.tojis
+      smtp.send_mail(msg,LensConfig[:local_address],
+		     LensConfig[:mobile_address])
+    }
+  end
+
+  def scheduleset
+    pimdb = PimDatabase.new(PimConfig)
+    s = @message.body.shift
+    a = ParseDate.parsedate(s)
+    time = (a[3] && a[4] ? "#{a[3]}:#{a[4]} " : '')
+    a = ParseDate.parsedate(s)
+    year = (a[0] ? a[0] : Time.now.year)
+    id = sprintf("%04d%02d%02d999999",year,a[1],a[2])
+    pimdata = PimData.new(pimdb,id)
+    pimdata.text = pimdata.text.to_s + "#{time}#{@message.body.join}"
+  end
+end
+

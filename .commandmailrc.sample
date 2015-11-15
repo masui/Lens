@@ -1,0 +1,60 @@
+# -*- ruby -*-
+
+class CommandMailHandler
+  def initialize(message)
+    @message = message
+  end
+
+  def process
+    case @message.subject
+    when /(時刻指定|遅延転送)\!/
+      delay
+    end
+  end
+
+  def at_time(t) # atコマンドが受け付ける時刻形式
+    sprintf("%02d:%02d %d/%d/%d",t.hour,t.min,t.mon,t.mday,t.year)
+  end
+
+  def delay
+    to = @message.header['To']
+    subject = 'Delayed mail'
+    sendtime = Time.now
+
+    while true do
+      line = @message.body.shift
+      break if line.nil? # EOF
+      line.chomp!
+      if line =~ /^\s*$/ then
+	break
+      elsif line =~ /^\S+@/ then
+	to = line
+      elsif ParseDate.parsedate(line) != [nil] * 8
+	sendtime = ParseDate.time(line)
+      else
+	subject = line
+      end
+    end
+
+    delayfile = "/tmp/delaymail#{$$}"
+    File.open(delayfile,'w'){ |f|
+      f.write(<<CMDEND)
+/usr/local/bin/ruby -x
+#!ruby
+require 'net/smtp'
+Net::SMTP.start('#{LensConfig[:smtp_host]}', 25) { |smtp|
+  smtp.send_mail(<<EOF,'#{LensConfig[:local_address]}','#{LensConfig[:local_address]}')
+Subject: #{subject.tojis}
+To: #{to}
+
+#{@message.body}
+EOF
+}
+CMDEND
+    }
+    # puts "at #{at_time(sendtime)} -f #{delayfile}"
+    system "at #{at_time(sendtime)} -f #{delayfile}"
+    File.unlink(delayfile)
+  end
+end
+

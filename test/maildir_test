@@ -1,0 +1,47 @@
+#!/usr/local/bin/ruby
+# -*- ruby -*-
+
+require 'runit/testcase'
+require 'runit/cui/testrunner'
+
+require 'lens/maildir'
+
+TESTDIR = '/home/masui/Maildir'
+
+class TestUnit < RUNIT::TestCase
+  def setup
+  end
+
+  def teardown
+    cleanup
+  end
+
+  def cleanup
+  end
+
+  def test_top_dir
+    maildir = Maildir.new(TESTDIR)
+    path = maildir.messagepath('abcdefg')
+    assert_equal(TESTDIR+'/cur/abcdefg',path)
+  end
+
+  def test_sub_dir
+    maildir = Maildir.new(TESTDIR,'person/eto')
+    path = maildir.messagepath('abcdefg')
+    assert_equal(TESTDIR+'/.person.eto/cur/abcdefg',path)
+  end
+
+  def test_each
+    maildir = Maildir.new(TESTDIR)
+    count = 0
+    maildir.each { |message|
+#      puts message.subject
+      count += 1
+      break if count >= 10
+    }
+    assert_equal(count,10)
+  end
+end
+
+RUNIT::CUI::TestRunner.run(TestUnit.suite)
+

@@ -1,0 +1,120 @@
+#!/usr/local/bin/ruby
+# -*- ruby -*-
+
+require 'runit/testcase'
+require 'runit/cui/testrunner'
+
+require 'lens/classify'
+
+TESTMESSAGE = '/tmp/testmessage'
+SPAM1 = <<EOF
+Subject: Details
+From: masui@pitecan.com
+To: masui@example.com
+Content-Type: multipart
+
+line1
+line2
+EOF
+
+SPAM2 = <<EOF
+Subject: ink jet toner
+From: masui@pitecan.com
+To: masui@example.com
+
+EOF
+
+SPAM3 = <<EOF
+Subject: normal subject
+From: SmallCap@example.com
+To: masui@example.com
+
+EOF
+
+NOTIMPORTANT = <<EOF
+Subject: [MACS:123] MACS ML
+From: masui@pitecan.com
+To: masui@example.com
+
+EOF
+
+REFILEMESSAGE = <<EOF
+Subject: [MACS:123] MACS ML
+From: madoka@rb3.so-net.ne.jp
+To: masui@example.com
+
+EOF
+
+COMMANDMESSAGE = <<EOF
+Subject: スケジュール?
+From: madoka@rb3.so-net.ne.jp
+To: masui@example.com
+
+EOF
+
+class TestUnit < RUNIT::TestCase
+  def setup
+    load "lensrc.sample" unless defined?(LensConfig)
+    load "#{ENV['HOME']}/.lensrc" unless defined?(LensConfig)
+  end
+
+  def teardown
+    cleanup
+  end
+
+  def cleanup
+    File.unlink(TESTMESSAGE)
+  end
+
+  def test_sobigf
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print SPAM1
+    }
+    message = Message.new(TESTMESSAGE)
+    assert_equal(false,!message.sobigf?)
+  end
+
+  def test_spam1
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print SPAM2
+    }
+    message = Message.new(TESTMESSAGE)
+    assert_equal(false,!message.have_spam_pat?(LensConfig))
+  end
+
+  def test_spam2
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print SPAM3
+    }
+    message = Message.new(TESTMESSAGE)
+    assert_equal(false,!message.have_spam_pat?(LensConfig))
+  end
+
+  def test_notimportant
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print NOTIMPORTANT
+    }
+    message = Message.new(TESTMESSAGE)
+    assert_equal(false,!message.not_important?(LensConfig))
+  end
+
+  def test_refile_folders
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print REFILEMESSAGE
+    }
+    message = Message.new(TESTMESSAGE)
+    folders = message.refile_folders(LensConfig).sort
+    assert_equal(['01madoka','MACS','person/madoka'],folders)
+  end
+
+  def test_commandmail
+    File.open(TESTMESSAGE,"w"){ |f|
+      f.print COMMANDMESSAGE
+    }
+    message = Message.new(TESTMESSAGE)
+    assert_equal(false,!message.commandmail?)
+  end
+end
+
+RUNIT::CUI::TestRunner.run(TestUnit.suite)
+

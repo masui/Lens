@@ -1,0 +1,253 @@
+<!-----------------------------
+	漢字コードはEUC
+	$Revision: 1.20 $
+	$Date: 2004/02/12 05:47:59 $
+------------------------------->
+<html>
+<head>
+<title>Lens</title>
+<STYLE TYPE="text/css">
+<!--
+body {
+	background-color: #f0f0ff;
+}
+h1 {
+	margin-right: 0%;
+	margin-left: 0%;
+	text-align: center;
+	padding: 0.5em 0.5em;
+	color: #ffffff;
+	text-indent: 0.25em;
+	border-style: none;
+	background-color: #502090;
+}
+h2 {
+	margin-right: 0%;
+	margin-left: 0%;
+	text-align: left;
+	padding: 0.3em 0.3em;
+	color: #ffffff;
+	text-indent: 0.25em;
+	border-style: none;
+	background-color: #606030;
+}
+pre {
+	font-family: monospace;
+	border-style: solid;
+	border-width: 1px 2px 2px 1px;
+	border-color: #6666aa; 
+	color: #444466;
+	background-color: #e8e8ff;
+	white-space: pre;
+	margin-right: 4.0em;
+	margin-left: 3.5em;
+	padding: 0.5em 2em;
+}
+a {
+	text-decoration: none
+}
+-->
+</STYLE>
+</head>
+<body>
+
+<script type="text/javascript"><!--
+google_ad_client = "pub-1495182592599762";
+google_ad_width = 728;
+google_ad_height = 90;
+google_ad_format = "728x90_as";
+//--></script>
+<script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<br>
+↑Googleのアドセンス広告です。
+
+<h1>Lens - メール振り分けプログラム
+<br>
+<font size=1>Up$Date: 2004/02/12 05:47:59 $ $Revision: 1.20 $</font>
+</h1>
+
+Lensは、
+受け取ったメールの内容を判断して各種の処理を行なうための
+Rubyプログラムです。
+Maildirを利用するIMAPサーバ環境において、
+フォルダ振り分け、
+SPAMメール処理、
+携帯へのメール転送、
+コマンドメール処理
+などを
+自働実行することができます。
+UnixMagazineの<a href="http://pitecan.com/UnixMagazine/PDF/if0305.pdf">
+2003年5月号記事</a>に関連情報があります。
+2004年2月発売のUnixMagazine(3月号)にも関連記事を書きました。
+<br>
+<font color=green>
+メールの振り分けにはprocmailが広く利用されているようですが、
+procmailは
+<a href="http://www.namazu.org/~satoru/misc/bad-knowhow.html">バッドノウハウ</a>が
+多数必要であるにもかかわらず充分便利とはいえないのでおすすめできません。
+lensは全部で300行ぐらいですが、
+この程度のプログラムでメール振り分けその他の
+処理を充分行なうことができますから、
+procmailを使わずlensのようなメール処理スクリプトを利用する方が良いと思います。
+</font>
+
+<h2>ニュース</h2>
+
+<ul>
+<li> 公開開始 (2004/2/10)
+</ul>
+
+<h2>ダウンロード</h2>
+
+<ul>
+<li> <a href="lens-0.2.tar.gz">lens-0.2.tar.gz</a>
+</ul>
+
+<h2>インストール</h2>
+
+<ul>
+<li> MakefileのBINDIRを編集 (lensのインストールディレクトリ指定)
+<li> sudo make (ライブラリなどのコピー)
+<li> ~/.lensrc, ~/.commandmailrcを編集
+<li> lensによる振り分けその他がうまくいくようであれば
+以下のようなテキストを~/.forwardに設定する
+
+<pre>
+|/usr/local/bin/lens
+</pre>
+
+</ul>
+
+<h2>使いかた</h2>
+
+<h3>.lensrcの設定</h3>
+
+~/.lensrcで以下の設定を記述します。
+
+<table border>
+<tr><td><code>:smtp_host</code></td>		<td>SMTPホスト名(携帯への転送で利用)</td></tr>
+<tr><td><code>:local_address</code></td>	<td>自分のメールアドレス</td></tr>
+<tr><td><code>:mobile_address</code></td>	<td>携帯メールアドレス</td></tr>
+<tr><td><code>:maildir</code></td>		<td>Maildirディレクトリ</td></tr>
+<tr><td><code>:non_important_mls</code></td>	<td>重要でないメーリングリスト名のリスト (携帯に転送しない)</td></tr>
+<tr><td><code>:subject_patterns</code></td>	<td>Subject:からのメール振り分けパタン</td></tr>
+<tr><td><code>:from_patterns</code></td>	<td>From:からのメール振り分けパタン</td></tr>
+<tr><td><code>:spam_patterns</code></td>	<td>SPAMメールのパタン</td></tr>
+</table>
+
+<h3>.lensrcの例</h3>
+
+<pre>
+# Configuration for Lens
+
+LensConfig = {
+  :smtp_host => 'mail.example.com',
+  :local_address => 'masui@example.com',
+  :mobile_address => 'masui@ezweb.ne.jp',
+  :maildir => "#{ENV['HOME']}/Maildir",
+
+  :non_important_mls => {
+    'test-ml'		=> 'test-ml',
+  },
+  :subject_patterns => {
+    'xyz-ml'		=> 'xyz',
+  },
+  :from_patterns => { # To: Cc: にも適用される
+    'yamada'		=> ['person/yamada', '01yamad'],
+  },
+  :spam_patterns => {
+    'Content-type'	=> [
+      /gb2312/i,
+    ],
+    'From'		=> [
+      /SmallCap/,
+      ],
+    'Subject'		=> [
+      /ink.*jet.*toner/i,
+      /health.*insurance/i,
+    ],
+  }
+}
+</pre>
+
+<h3>.commandmailrcの設定</h3>
+
+コマンドメールを利用する場合は~/.commandmailrcを適当に設定します。
+
+<h3>SPAM判定プログラムの利用</h3>
+
+lensでは<code>Subject</code>や<code>From</code>の
+パタンマッチングによるSPAM判定しかサポートしていませんが、
+Messageクラスのspam_contents?メソッドを自分で定義すれば
+任意のSPAM判定プログラムを利用することができます。
+<p>
+
+すべての人に有効なSPAM判定プログラムがあれば
+classify.rb内でこのメソッドを定義すればいいのですが、
+そうでない場合は自前のSPAM判定プログラムを利用した方が良いでしょう。
+
+私は以下のように~/.lensrc内でspam_contents?を定義することにより
+<a href="http://www.h2.dion.ne.jp/~nabeken/bsfilter/">bsfilter</a>という
+SPAM判定プログラムを利用しています。
+
+<pre>
+class Message
+  def spam_contents?
+    system "/home/masui/bin/bsfilter -m rf --homedir /home/masui/SpamFilter/.bsfilter < #{path}"
+  end
+end
+</pre>
+
+SPAM退治の方法については、私が書いた
+<a href="http://www.pitecan.com/articles/ASCII/0306/diary0306.html">ASCII記事</a>
+などが参考になるかもしれません。
+
+<h2>注意</h2>
+
+<ul>
+<li> .forwardに記述したlensが誤動作するとメールが失われてしまうことがあるので、
+運用時は充分注意して下さい。
+メール振り分け/SPAM判定/コマンドメール実行/などの動作を確認するため、
+lensを.forwardに記述する前に
+<pre>
+% cat testmail | lens
+</pre>
+などを実行してテストを行なうとよいでしょう。
+
+<li> Maildirの<code>a/b</code>というフォルダは、
+<code>Maildir/.a.b/</code>という
+ディレクトリを使うと仮定しています。
+これと異なるディレクトリ名を使うMaildirの場合は
+プログラムの修正が必要です。
+
+</ul>
+
+<h2>TODO</h2>
+
+<h2>更新履歴</h2>
+
+<ul>
+<li> <a href="lens-0.2.tar.gz">lens-0.2.tar.gz</a> (2004/2/12) 
+ <ul>
+ <li> require 'lens/commandmail' を削除
+ <li> Maildirと/tmp/のファイルシステムが異なっているとき発生する問題修正
+ </ul>
+<li> <a href="lens-0.1.tar.gz">lens-0.1.tar.gz</a> (2004/2/10) 
+</ul>
+
+<h2>掲示板</h2>
+
+<a href="http://pitecan.com/wiki/programs/search.cgi?title=Lens%B7%C7%BC%A8%C8%C4">掲示板</a>をご利用下さい。
+
+<hr align=top>
+<img src="http://pitecan.com/cgi-bin/Count.cgi?df=lens.dat&cache=N&frgb=000080&dd=C">
+<br>
+<font size=2> Up$Date: 2004/02/12 05:47:59 $
+<a href="/index.html">
+Toshiyuki Masui</a> @ AIST
+</font>
+
+</body>
+</html>

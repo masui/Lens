@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+# -*- ruby -*-
+
+require 'lens/lens'
+
+LENSCONFIG = "#{ENV['HOME']}/.lensrc.new"
+CMDCONFIG = "#{ENV['HOME']}/.commandmailrc"
+
+if File.exist?(LENSCONFIG) then
+  load LENSCONFIG
+else
+  puts "Config file <#{LENSCONFIG}> is required."
+  exit
+end
+
+if File.exist?(CMDCONFIG) then
+  load CMDCONFIG
+end
+
+Lens.new(LensConfig,ARGV[0]).process

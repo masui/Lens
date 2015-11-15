@@ -1,0 +1,32 @@
+# Configuration for Lens
+
+LensConfig = {
+  :smtp_host => 'mail.example.com',
+  :local_address => 'masui@example.com',
+  :mobile_address => 'masui@ezweb.ne.jp',
+  :maildir => "#{ENV['HOME']}/Maildir",
+
+  :non_important_mls => {
+    'test-ml'		=> 'test-ml',
+    'MACS'		=> 'MACS',
+  },
+  :subject_patterns => {
+    'xyz-ml'		=> 'xyz',
+  },
+  :from_patterns => { # To: Cc: にも適用される
+    'yamada'		=> ['person/yamada', '01yamad'],
+  },
+  :spam_patterns => {
+    'Content-type'	=> [
+      /gb2312/i,
+    ],
+    'From'		=> [
+      /SmallCap/,
+      ],
+    'Subject'		=> [
+      /ink.*jet.*toner/i,
+      /health.*insurance/i,
+    ],
+  }
+}
+
