@@ -7,7 +7,7 @@ require 'lens/message'
 TESTMAILDIR = '/tmp/Maildir_test'
 TESTMESSAGE = '/tmp/Maildir_test/testmessage'
 
-class TestFoo < MiniTest::Unit::TestCase
+class MessageTest < MiniTest::Unit::TestCase
   def setup
     @maildir = TESTMAILDIR
     cleanup

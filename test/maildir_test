@@ -1,14 +1,14 @@
 #!/usr/local/bin/ruby
 # -*- ruby -*-
 
-require 'runit/testcase'
-require 'runit/cui/testrunner'
+require 'minitest/autorun'
+require 'lens/message'
 
 require 'lens/maildir'
 
 TESTDIR = '/home/masui/Maildir'
 
-class TestUnit < RUNIT::TestCase
+class MaildirTest < MiniTest::Unit::TestCase
   def setup
   end
 
@@ -42,6 +42,4 @@ class TestUnit < RUNIT::TestCase
     assert_equal(count,10)
   end
 end
-
-RUNIT::CUI::TestRunner.run(TestUnit.suite)
 
