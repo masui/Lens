@@ -2,18 +2,12 @@
 # -*- coding: utf-8 -*-
 
 require 'minitest/autorun'
-
-#require 'runit/testcase'
-#require 'runit/cui/testrunner'
-
 require 'lens/message'
 
 TESTMAILDIR = '/tmp/Maildir_test'
 TESTMESSAGE = '/tmp/Maildir_test/testmessage'
 
-# class TestUnit < RUNIT::TestCase
-
-class TestUnit < MiniTest::Test
+class TestFoo < MiniTest::Unit::TestCase
   def setup
     @maildir = TESTMAILDIR
     cleanup
@@ -46,7 +40,7 @@ EOF
     assert_equal(false,message.stdin)
     assert_equal(@text1,message.text.join)
   end
-
+  
   def test_refile
     File.open(TESTMESSAGE,"w"){ |f|
       f.print @text1
@@ -86,7 +80,7 @@ EOF
       f.print @text1
     }
     message = Message.new(TESTMESSAGE)
-    assert_equal("line1\nline2\n",message.body.join)
+    assert_equal("line1\nline2\n",message.body.to_s)
   end
 
   def test_mlname
@@ -96,8 +90,7 @@ EOF
     message = Message.new(TESTMESSAGE)
     assert_equal("testml",message.ml_name)
   end
-
 end
 
-RUNIT::CUI::TestRunner.run(TestUnit.suite)
+# RUNIT::CUI::TestRunner.run(TestUnit.suite)
 

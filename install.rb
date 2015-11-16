@@ -20,7 +20,7 @@ require 'rbconfig'
 
 home = ENV['HOME']
 bindir = ARGV.shift
-sitelibdir = Config::CONFIG['sitelibdir']
+sitelibdir = RbConfig::CONFIG['sitelibdir']
 lenslibdir = "#{sitelibdir}/lens"
 
 LIBFILES = [

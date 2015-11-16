@@ -17,6 +17,7 @@
 # require 'mailread'
 # require 'kconv'
 
+require 'mail'
 require 'socket' # for hostname
 
 require 'lens/parsedate'
@@ -41,7 +42,7 @@ class Message
 	@text = f.readlines
       }
     end
-    @mail = Mail.new(@path)
+    @mail = Mail.read(@path)
   end
 
   attr :path, true
@@ -66,7 +67,7 @@ class Message
   end
 
   def subject
-    self['Subject'].toeuc.gsub(/[\r\n]+/,'')
+    self['Subject'].gsub(/[\r\n]+/,'')
   end
 
   def body
