@@ -2,13 +2,15 @@
 #	$Date: 2004/02/12 05:44:31 $
 #	$Revision: 1.12 $
 #
-# make$B$r5/F0$9$k$H!"I,MW$J%i%$%V%i%j$,(B/usr/local/lib/ruby/site_ruby/1.x $B$J$I$K!"(B
-# lens$B%W%m%0%i%`$,(B /usr/local/bin/ $B$J$I$K!"(B
-# lensrc.sample$B$,(B ~/.lensrc $B$K!"(B
-# commandmailrc.sample$B$,(B ~/.commandmailrc $B$K(B $B%3%T!<$5$l$k!#(B
+# makeを起動すると、必要なライブラリが/usr/local/lib/ruby/site_ruby/1.x などに、
+# lensプログラムが /usr/local/bin/ などに、
+# lensrc.sampleが ~/.lensrc に、
+# commandmailrc.sampleが ~/.commandmailrc に コピーされる。
+#
+#  2015/11/16 10:38:41 新しいpirecan.comで動かすための修正開始
 #
 
-# lens$B%W%m%0%i%`$r%$%s%9%H!<%k$9$k%G%#%l%/%H%j(B
+# lensプログラムをインストールするディレクトリ
 BINDIR = /usr/local/bin
 
 VERSION = 0.2

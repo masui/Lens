@@ -1,4 +1,4 @@
-# -*- ruby -*-
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2004 Toshiyuki MASUI <masui@pitecan.com>
 #
@@ -14,8 +14,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-require 'mailread'
-require 'kconv'
+# require 'mailread'
+# require 'kconv'
+
 require 'socket' # for hostname
 
 require 'lens/parsedate'
@@ -23,7 +24,7 @@ require 'lens/maildir'
 
 class Message
   def initialize(path = nil)
-    if path.nil? then # $BI8=`F~NO$+$i%a%C%;!<%8FI$_9~$_(B
+    if path.nil? then # 標準入力からメッセージ読み込み
       hostname = Socket.gethostname
       @stdin = true
       @text = STDIN.readlines
