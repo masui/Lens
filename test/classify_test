@@ -1,8 +1,7 @@
-#!/usr/local/bin/ruby
-# -*- ruby -*-
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
-require 'runit/testcase'
-require 'runit/cui/testrunner'
+require 'minitest/autorun'
 
 require 'lens/classify'
 
@@ -11,7 +10,7 @@ SPAM1 = <<EOF
 Subject: Details
 From: masui@pitecan.com
 To: masui@example.com
-Content-Type: multipart
+Content-Type: Multipart/Mixed; boundary="simple"
 
 line1
 line2
@@ -46,13 +45,13 @@ To: masui@example.com
 EOF
 
 COMMANDMESSAGE = <<EOF
-Subject: $B%9%1%8%e!<%k(B?
+Subject: スケジュール?
 From: madoka@rb3.so-net.ne.jp
 To: masui@example.com
 
 EOF
 
-class TestUnit < RUNIT::TestCase
+class ClassifyTest < MiniTest::Unit::TestCase
   def setup
     load "lensrc.sample" unless defined?(LensConfig)
     load "#{ENV['HOME']}/.lensrc" unless defined?(LensConfig)
@@ -115,6 +114,4 @@ class TestUnit < RUNIT::TestCase
     assert_equal(false,!message.commandmail?)
   end
 end
-
-RUNIT::CUI::TestRunner.run(TestUnit.suite)
 

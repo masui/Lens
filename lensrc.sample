@@ -15,6 +15,7 @@ LensConfig = {
   },
   :from_patterns => { # To: Cc: にも適用される
     'yamada'		=> ['person/yamada', '01yamad'],
+    'madoka'		=> ['person/madoka', '01madoka'],
   },
   :spam_patterns => {
     'Content-type'	=> [

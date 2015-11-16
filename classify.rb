@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # -*- ruby -*-
 
 # Copyright (C) 2004 Toshiyuki MASUI <masui@pitecan.com>
@@ -18,12 +19,12 @@ require 'lens/message'
 
 class Message
   def sobigf?
-    self['Content-Type'] =~ /multipart/ &&
+    self['Content-Type'] =~ /multipart/i &&
       subject =~ /(Your application|Details|Thank you!|That movie|Wicked screensaver|Your details|Approved|My details)/
   end
 
   def spam_contents?
-    # $BFbMF$+$i$N(BSPAM$BH=Dj%k!<%A%s$,$"$l$P$3$3$K5-=R$9$k!#(B.lensrc$BFb$G(B spam_contents? $B$rDj5A$7$F$b$h$$!#(B
+    # 内容からのSPAM判定ルーチンがあればここに記述する。.lensrc内で spam_contents? を定義してもよい。
     # system "/home/masui/bin/bsfilter -m rf --homedir /home/masui/SpamFilter/.bsfilter < #{path}"
     false
   end

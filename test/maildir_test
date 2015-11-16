@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 # -*- ruby -*-
 
 require 'minitest/autorun'
@@ -35,7 +35,6 @@ class MaildirTest < MiniTest::Unit::TestCase
     maildir = Maildir.new(TESTDIR)
     count = 0
     maildir.each { |message|
-#      puts message.subject
       count += 1
       break if count >= 10
     }
