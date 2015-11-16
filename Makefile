@@ -57,6 +57,7 @@ libtest:
 	ruby test/maildir_test
 	ruby test/message_test
 	ruby test/classify_test
+	ruby test/parsedate_test
 
 mailtest:
 	ruby lens < test/madoka.mail

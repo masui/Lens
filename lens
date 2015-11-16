@@ -31,7 +31,7 @@ else
 end
 
 if File.exist?(CMDCONFIG) then
-  load CMDCONFIG
+  # load CMDCONFIG
 end
 
 Lens.new(LensConfig,ARGV[0]).process

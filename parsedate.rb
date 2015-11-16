@@ -14,15 +14,20 @@
 # GNU General Public License for more details.
 #
 
+require 'time'
+
 module ParseDate # time('3/11') time('Thu Mar 11 19:28:23 JST 1999')
   def time(date, cyear=false)
-    ary = parsedate(date, cyear)
-    now = Time.now
-    nowary = [now.year, now.mon, now.mday, now.hour, now.min, now.sec]
-    (0..5).each { |i|
-      ary[i] = nowary[i] if ary[i].nil?
-    }
-    ary[6] == 'GMT' ? Time::gm(*ary[0..5]) : Time::local(*ary[0..5])
+    # ary = parsedate(date, cyear)
+    # now = Time.now
+    # nowary = [now.year, now.mon, now.mday, now.hour, now.min, now.sec]
+    # (0..5).each { |i|
+    #   ary[i] = nowary[i] if ary[i].nil?
+    #  }
+    #  ary[6] == 'GMT' ? Time::gm(*ary[0..5]) : Time::local(*ary[0..5])
+
+    t = (date.to_s == '' ? Time.now : Time.parse(date))
+    # ary = [t.year, t.month, t.day, t.hour, t.min, t.sec, t]
   end
   module_function :time
 end

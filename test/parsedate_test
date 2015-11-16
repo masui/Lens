@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# -*- ruby -*-
+
+require 'minitest/autorun'
+
+require 'lens/parsedate'
+
+class ParseDateTest < MiniTest::Unit::TestCase
+  def setup
+  end
+
+  def teardown
+    cleanup
+  end
+
+  def cleanup
+  end
+
+  def test_parseid
+    t = ParseDate.time('Thu Mar 11 19:28:23 JST 1999')
+    assert_equal t[0], 1999
+  end
+end
+

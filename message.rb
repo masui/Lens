@@ -30,13 +30,13 @@ class Message
       time = date ? ParseDate.time(date) : Time.now
       @path = "/tmp/#{time.to_i}.#{$$}.#{hostname}"
       File.open(@path,"w"){ |f|
-	f.print @text
+	f.print @text.join
       }
     else
       @path = path
       @stdin = false
       File.open(@path,"r"){ |f|
-	@text = f.readlines
+	@text = f.readlines.join
       }
     end
     @mail = Mail.read(@path)

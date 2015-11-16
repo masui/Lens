@@ -15,7 +15,6 @@
 #
 
 require 'net/smtp'
-require 'parsedate'
 
 require 'lens/maildir'
 require 'lens/message'
@@ -54,6 +53,7 @@ class Lens
       end
 
       # SPAM以外はすべて2003/3のようなフォルダに保存
+      puts "message.refile #{@maildir},#{message.time.year}/#{message.time.mon}"
       message.refile(@maildir,"#{message.time.year}/#{message.time.mon}")
       
       # 携帯に転送するか
