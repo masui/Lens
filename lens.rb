@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
 # -*- ruby -*-
 
+# Copyright (C) 2004-2015 Toshiyuki MASUI <masui@pitecan.com>
 #
-# Copyright (C) 2004 Toshiyuki MASUI <masui@pitecan.com>
-#
-# $Id: lens.rb,v 1.7 2004/02/17 08:35:43 masui Exp $
-#
-# This program 'Towers of Hanoi by TeX' is free software; you can
-# redistribute it and/or modify it under the terms of the GNU General
-# Public License as published by the Free Software Foundation; either
-# version 2 or (at your option) any later version.
+# This program 'Lens' is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 or (at
+# your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,9 +31,9 @@ class Lens
 
   def process
     if @arg.nil?
-      message = Message.new # $BI8=`F~NO(B
+      message = Message.new # 標準入力
       messages = [message]
-      message.refile(@maildir) unless message.spam?(@config) # inbox$B$K%3%T!<(B
+      message.refile(@maildir) unless message.spam?(@config) # inboxにコピー
     else
       starttime = ParseDate.time(@arg)
       md = Maildir.new(@maildir)
@@ -47,7 +45,7 @@ class Lens
     messages.each { |message|
       printf("%s Subject: %s \n",message.path,message.subject)
 
-      # SPAM$BG'Dj%a!<%k$O(Bspam$B%U%)%k%@Aw$j(B
+      # SPAM認定メールはspamフォルダ送り
       if message.spam?(@config) then
 	message.refile(@maildir,'00Spam')
 	puts "   ==> spam"
@@ -55,10 +53,10 @@ class Lens
 	next
       end
 
-      # SPAM$B0J30$O$9$Y$F(B2003/3$B$N$h$&$J%U%)%k%@$KJ]B8(B
+      # SPAM以外はすべて2003/3のようなフォルダに保存
       message.refile(@maildir,"#{message.time.year}/#{message.time.mon}")
       
-      # $B7HBS$KE>Aw$9$k$+(B
+      # 携帯に転送するか
       if @arg.nil? &&  @config[:mobile_address] && message.forward_to_mobile_phone?(@config) then
 	Net::SMTP.start(@config[:smtp_host], 25) { |smtp|
 	  smtp.send_mail(message.text,@config[:local_address],
@@ -66,7 +64,7 @@ class Lens
 	}
       end
 
-      # $BB>$N%"%I%l%9$KE>Aw$9$k$+(B
+      # 他のアドレスに転送するか
       if @arg.nil? &&  @config[:other_address] && message.forward_to_mobile_phone?(@config) then
 	Net::SMTP.start(@config[:smtp_host], 25) { |smtp|
 	  smtp.send_mail(message.text,@config[:local_address],
@@ -74,12 +72,12 @@ class Lens
 	}
       end
 
-      # $B%3%^%s%I%a!<%k=hM}(B
+      # コマンドメール処理
       if defined?(CommandMailHandler) && message.commandmail? then
 	CommandMailHandler.new(message).process
       end
 
-      # $B<+F/?6$jJ,$1(B
+      # 自働振り分け
       if folders = message.refile_folders(@config) then
 	folders.each { |folder|
 	  message.refile(@maildir,folder)
